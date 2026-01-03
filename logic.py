@@ -2,7 +2,7 @@
 
 Provides `compute_base_match_df` which computes absolute differences between
 each agent and a given content instance for the following attributes:
-`economic_status`, `ethics`, `politics`, `cultural`, `age`, and `sex`.
+`tiered_income`, `ethics`, `normalized_pol`, `cultural`, `age`, and `sex`.
 
 Differences are absolute values. For `cultural` the difference is 0 when
 equal and 1 when different. The `base_score` is the mean of available
@@ -35,8 +35,8 @@ def compute_base_match_df(agents_df: pd.DataFrame, content: Union[Mapping, objec
     """Compute base match score between agents and a single content instance.
 
     Args:
-        agents_df: DataFrame of agents (columns expected: `economic_status`,
-            `ethics`, `politics`, `cultural`, `age`, `sex`). Additional columns
+            agents_df: DataFrame of agents (columns expected: `tiered_income`,
+                `ethics`, `normalized_pol`, `cultural`, `age`, `sex`). Additional columns
             are preserved.
         content: Content instance or mapping with the same keys as above. Can
             be an object with `to_dict()`.
@@ -56,7 +56,7 @@ def compute_base_match_df(agents_df: pd.DataFrame, content: Union[Mapping, objec
     attrs = [
         "tiered_income",
         "ethics",
-        "politics",
+        "normalized_pol",
         "cultural",
         "age",
         "sex",
@@ -81,8 +81,22 @@ def compute_base_match_df(agents_df: pd.DataFrame, content: Union[Mapping, objec
     def cval(attr: str):
         return content_dict.get(attr, None)
 
-    # Now compute other numeric diffs: ethics, politics, age, sex
-    for attr in ["ethics", "politics", "age", "sex"]:
+    # Now compute other numeric diffs: ethics, normalized_pol, age, sex
+    # Accept either a pre-normalized value (`normalized_pol`) or, for
+    # backward-compatibility, a raw `politics` value in the content mapping.
+    # If content mapping contains `politics` but not `normalized_pol`, we
+    # compute normalized_pol from politics as (politics + 2) / 4.
+    if "normalized_pol" not in content_dict and "politics" in content_dict:
+        try:
+            raw_pol = pd.to_numeric(content_dict.get("politics"), errors="coerce")
+            if not pd.isna(raw_pol):
+                content_dict["normalized_pol"] = (raw_pol + 2.0) / 4.0
+            else:
+                content_dict["normalized_pol"] = np.nan
+        except Exception:
+            content_dict["normalized_pol"] = np.nan
+
+    for attr in ["ethics", "normalized_pol", "age", "sex"]:
         c = cval(attr)
         try:
             c_num = pd.to_numeric(c, errors="coerce")

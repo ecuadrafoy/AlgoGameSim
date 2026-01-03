@@ -24,7 +24,7 @@ class Agent:
         politics: Political orientation (-2 to +2)
         cultural: Cultural background (enum)
         age: Age in years (5-90)
-        sex: Biological sex (0 or 1)
+        sex: Biological sex (0, 1, or 2)
         novelty: Preference for novelty (0-1)
         conscientiousness: Conscientiousness trait (0-1)
         impulsivity: Impulsivity trait (0-1)
@@ -59,7 +59,7 @@ class Agent:
             politics: Political orientation (-2 to +2)
             cultural: Cultural background
             age: Age in years (5-90)
-            sex: Biological sex (0 or 1)
+            sex: Biological sex (0, 1, or 2)
             novelty: Novelty preference (0-1)
             conscientiousness: Conscientiousness level (0-1)
             impulsivity: Impulsivity level (0-1)
@@ -126,9 +126,9 @@ class Agent:
     
     @staticmethod
     def _validate_sex(value: int) -> int:
-        """Validate sex (0 or 1)."""
-        if value not in (0, 1):
-            raise ValueError(f"sex must be 0 or 1, got {value}")
+        """Validate sex (0, 1, or 2)."""
+        if value not in (0, 1, 2):
+            raise ValueError(f"sex must be 0, 1, or 2, got {value}")
         return value
     
     def __repr__(self) -> str:
